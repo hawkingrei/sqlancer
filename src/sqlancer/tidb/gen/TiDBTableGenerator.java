@@ -160,4 +160,44 @@ public class TiDBTableGenerator {
             sb.append(")");
         }
     }
+
+    private enum PartitionOptions {
+        HASH, KEY
+    }
+    private void appendPartitionOptions(StringBuilder sb) {
+        if (Randomly.getBoolean()) {
+            return;
+        }
+        sb.append(" PARTITION BY");
+        switch (Randomly.fromOptions(TiDBTableGenerator.PartitionOptions.values())) {
+            case HASH:
+                if (Randomly.getBoolean()) {
+                    sb.append(" LINEAR");
+                }
+                sb.append(" HASH(");
+                // TODO: consider arbitrary expressions
+                // MySQLExpression expr =
+                // MySQLRandomExpressionGenerator.generateRandomExpression(Collections.emptyList(),
+                // null, r);
+                // sb.append(MySQLVisitor.asString(expr));
+                sb.append(Randomly.fromList(columns));
+                sb.append(")");
+                break;
+            case KEY:
+                if (Randomly.getBoolean()) {
+                    sb.append(" LINEAR");
+                }
+                sb.append(" KEY");
+                if (Randomly.getBoolean()) {
+                    sb.append(" ALGORITHM=");
+                    sb.append(Randomly.fromOptions(1, 2));
+                }
+                sb.append(" (");
+                sb.append(Randomly.nonEmptySubset(columns).stream().collect(Collectors.joining(", ")));
+                sb.append(")");
+                break;
+            default:
+                throw new AssertionError();
+        }
+    }
 }
