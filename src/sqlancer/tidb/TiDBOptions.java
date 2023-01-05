@@ -32,6 +32,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
 
+    @Parameter(names = "--test-partition", description = "Allows generation of partitioned tables with higher probability", arity = 1)
+    public boolean testPartition = false;
+
     public enum TiDBOracleFactory implements OracleFactory<TiDBGlobalState> {
         HAVING {
             @Override

@@ -51,12 +51,12 @@ public class TiDBTableGenerator {
             TiDBTable otherTable = globalState.getSchema().getRandomTable();
             sb.append(otherTable.getName());
         } else {
-            createNewTable(gen, sb);
+            createNewTable(gen, sb,globalState);
         }
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
-    private void createNewTable(TiDBExpressionGenerator gen, StringBuilder sb) {
+    private void createNewTable(TiDBExpressionGenerator gen, StringBuilder sb, TiDBGlobalState globalState) {
         sb.append("(");
         for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
@@ -120,9 +120,13 @@ public class TiDBTableGenerator {
             errors.add(" used in key specification without a key length");
         }
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (Randomly.getBooleanWithRatherLowProbability() || globalState.getDbmsSpecificOptions().testPartition) {
             sb.append("PARTITION BY HASH(");
-            sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            if (Randomly.getBooleanWithRatherLowProbability()) {
+                sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            } else {
+                sb.append(Randomly.fromList(columns).getName());
+            }
             sb.append(") ");
             sb.append("PARTITIONS ");
             sb.append(Randomly.getNotCachedInteger(1, 100));
